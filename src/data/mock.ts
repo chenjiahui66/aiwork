@@ -20,6 +20,7 @@ export const mockApps: AiApp[] = [
     category: 'productivity',
     tags: ['热门'],
     status: 'online',
+    route: '/apps/chat-qa',
   },
   {
     id: 'ai-writing',

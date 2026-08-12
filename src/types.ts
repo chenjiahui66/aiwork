@@ -17,6 +17,8 @@ export interface AiApp {
   tags: ('热门' | '新上线' | '即将推出')[]
   /** 当前状态:online / beta / coming */
   status: 'online' | 'beta' | 'coming'
+  /** 路由路径(可选),有值时点击跳转到该路由 */
+  route?: string
 }
 
 export interface UserInfo {

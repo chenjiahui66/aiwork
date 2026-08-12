@@ -58,12 +58,13 @@
 
 <script setup lang="ts">
 import { ref, computed } from 'vue'
-import { useRoute } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
 import type { AiApp } from '@/types'
 import { mockApps } from '@/data/mock'
 
 const route = useRoute()
+const router = useRouter()
 const search = ref('')
 const category = ref<string>('')
 
@@ -84,6 +85,11 @@ function onAppClick(app: AiApp) {
   }
   if (app.status === 'beta') {
     ElMessage.warning(`「${app.name}」正在内测中,请联系管理员开通`)
+    return
+  }
+  // 有 route 字段的真应用,跳过去
+  if (app.route) {
+    router.push(app.route)
     return
   }
   ElMessage.success(`进入「${app.name}」- 第一期 mock,实际功能开发中`)

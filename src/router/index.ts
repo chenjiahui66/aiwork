@@ -22,6 +22,12 @@ const routes: RouteRecordRaw[] = [
         meta: { title: 'AI 应用', icon: 'Grid' },
       },
       {
+        path: 'apps/chat-qa',
+        name: 'chat-qa',
+        component: () => import('@/views/ChatQAView.vue'),
+        meta: { title: '智能问答', icon: 'ChatDotRound' },
+      },
+      {
         path: 'knowledge',
         name: 'knowledge',
         component: () => import('@/views/KnowledgeView.vue'),
