@@ -1,0 +1,108 @@
+// AiWork mock 数据(纯前端展示用)
+import type { AiApp, UserInfo } from '@/types'
+
+export const mockUser: UserInfo = {
+  id: 10086,
+  username: 'zhangsan',
+  nickname: '张明远',
+  department: '产品研发中心',
+  role: 'admin',
+}
+
+// 完整应用市场(第一期优先展示前 6 个)
+export const mockApps: AiApp[] = [
+  {
+    id: 'chat-qa',
+    name: '智能问答',
+    description: '上传企业文档,员工自然语言提问,AI 基于内部知识库精准回答',
+    icon: 'ChatDotRound',
+    bgGradient: 'linear-gradient(135deg, #3b82f6, #6366f1)',
+    category: 'productivity',
+    tags: ['热门'],
+    status: 'online',
+  },
+  {
+    id: 'ai-writing',
+    name: 'AI 写作助手',
+    description: '周报 / 邮件 / 会议纪要 / 翻译 / 公文写作,一键生成专业文本',
+    icon: 'EditPen',
+    bgGradient: 'linear-gradient(135deg, #10b981, #06b6d4)',
+    category: 'communication',
+    tags: ['热门'],
+    status: 'online',
+  },
+  {
+    id: 'data-insight',
+    name: '数据洞察',
+    description: '自然语言描述需求,自动生成 SQL 并可视化图表,人人都是数据分析师',
+    icon: 'DataLine',
+    bgGradient: 'linear-gradient(135deg, #f59e0b, #ef4444)',
+    category: 'data',
+    tags: ['热门'],
+    status: 'online',
+  },
+  {
+    id: 'meeting-assistant',
+    name: '会议助手',
+    description: '会议实时转写、自动生成会议纪要、待办事项一键同步到任务系统',
+    icon: 'Microphone',
+    bgGradient: 'linear-gradient(135deg, #8b5cf6, #ec4899)',
+    category: 'productivity',
+    tags: ['新上线'],
+    status: 'online',
+  },
+  {
+    id: 'ai-design',
+    name: 'AI 设计助手',
+    description: '海报 / Banner / Logo / PPT 封面,文字描述秒出专业设计图',
+    icon: 'PictureFilled',
+    bgGradient: 'linear-gradient(135deg, #f43f5e, #f59e0b)',
+    category: 'creative',
+    tags: ['新上线'],
+    status: 'beta',
+  },
+  {
+    id: 'hr-assistant',
+    name: 'HR 助手',
+    description: 'JD 自动生成、简历智能筛选、入职材料自动归档',
+    icon: 'UserFilled',
+    bgGradient: 'linear-gradient(135deg, #0ea5e9, #14b8a6)',
+    category: 'productivity',
+    tags: ['热门'],
+    status: 'online',
+  },
+  {
+    id: 'workflow',
+    name: '可视化工作流',
+    description: '拖拽搭建多 Agent 协作流程,串联企业内部系统完成复杂任务',
+    icon: 'Connection',
+    bgGradient: 'linear-gradient(135deg, #6366f1, #a855f7)',
+    category: 'data',
+    tags: ['即将推出'],
+    status: 'coming',
+  },
+  {
+    id: 'translation',
+    name: '翻译助手',
+    description: '支持 50+ 语种互译,合同 / 技术文档 / 邮件一键精准翻译',
+    icon: 'Promotion',
+    bgGradient: 'linear-gradient(135deg, #06b6d4, #3b82f6)',
+    category: 'communication',
+    tags: [],
+    status: 'beta',
+  },
+]
+
+export const mockStats = [
+  { label: '今日 AI 调用', value: '1,284', icon: 'ChatDotRound', color: 'blue' as const },
+  { label: '本周完成任务', value: '167', icon: 'CircleCheck', color: 'green' as const },
+  { label: '节省工时(h)', value: '46.5', icon: 'Timer', color: 'purple' as const },
+  { label: '知识库文档', value: '892', icon: 'Document', color: 'orange' as const },
+]
+
+export const mockTodos = [
+  { id: 1, title: '审批:市场部 Q3 预算申请', type: '审批', time: '2 小时内' },
+  { id: 2, title: 'AI 会议助手已生成 3 份会议纪要待您确认', type: '通知', time: '今天 10:30' },
+  { id: 3, title: '本周周报草稿已生成,请审阅', type: 'AI 生成', time: '昨天' },
+  { id: 4, title: 'HR 助手筛选出 12 份简历进入下一轮', type: '通知', time: '昨天' },
+]
