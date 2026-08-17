@@ -376,8 +376,11 @@ async function sendQuestion() {
   scrollToBottom()
 
   // 加一条 AI 消息, 流式往里追加
-  const aiMsg: Message = { role: 'assistant', content: '', streaming: true }
-  messages.value.push(aiMsg)
+  // 用索引访问, 而不是持有对象引用 —— Vue 3 对 push 进去的 plain object
+  // 会创建 reactive proxy, 但局部变量 aiMsg 不会自动变 proxy, 直接 mutate 它
+  // 可能触发不了响应式更新
+  messages.value.push({ role: 'assistant', content: '', streaming: true })
+  const aiMsgIdx = messages.value.length - 1
   streaming.value = true
   lastSources.value = []
 
@@ -418,8 +421,13 @@ async function sendQuestion() {
           if (event.type === 'sources') {
             lastSources.value = event.sources || []
           } else if (event.type === 'token') {
-            aiMsg.content += event.content
-            scrollToBottom()
+            // 通过数组下标访问, 触发 Vue 响应式更新
+            // 关键: 不能用 const aiMsg = {...}; push; mutate aiMsg, 那样可能 mutate 到非 proxy 对象
+            messages.value[aiMsgIdx].content += event.content
+            // 流式时每隔几个 token 滚一次底, 不要每个都滚(性能差)
+            if (messages.value[aiMsgIdx].content.length % 6 < 2) {
+              scrollToBottom()
+            }
           } else if (event.type === 'error') {
             ElMessage.error(event.message)
           }
@@ -429,11 +437,11 @@ async function sendQuestion() {
       }
     }
 
-    aiMsg.sources = lastSources.value
-    aiMsg.streaming = false
+    messages.value[aiMsgIdx].sources = lastSources.value
+    messages.value[aiMsgIdx].streaming = false
   } catch (e: any) {
-    aiMsg.content = `❌ 请求失败: ${e.message}\n\n请确认后端服务已启动: cd D:\\project\\MVPdemo\\aiwork-backend && python -m app.main`
-    aiMsg.streaming = false
+    messages.value[aiMsgIdx].content = `❌ 请求失败: ${e.message}\n\n请确认后端服务已启动: cd D:\\project\\MVPdemo\\aiwork-backend && python -m app.main`
+    messages.value[aiMsgIdx].streaming = false
     ElMessage.error('问答请求失败')
   } finally {
     streaming.value = false
