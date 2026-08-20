@@ -103,6 +103,7 @@ export const mockApps: AiApp[] = [
     category: 'communication',
     tags: [],
     status: 'beta',
+    route: '/apps/translator',
   },
 ]
 
