@@ -34,6 +34,17 @@ export const mockApps: AiApp[] = [
     route: '/apps/ai-writing',
   },
   {
+    id: 'summarizer',
+    name: '文档摘要',
+    description: '长文/报告/会议纪要一键压缩成短摘要、要点列表或 TL;DR',
+    icon: 'Document',
+    bgGradient: 'linear-gradient(135deg, #f59e0b, #eab308)',
+    category: 'productivity',
+    tags: ['新上线'],
+    status: 'online',
+    route: '/apps/summarizer',
+  },
+  {
     id: 'data-insight',
     name: '数据洞察',
     description: '自然语言描述需求,自动生成 SQL 并可视化图表,人人都是数据分析师',

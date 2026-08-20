@@ -34,6 +34,12 @@ const routes: RouteRecordRaw[] = [
         meta: { title: 'AI 写作助手', icon: 'EditPen' },
       },
       {
+        path: 'apps/summarizer',
+        name: 'summarizer',
+        component: () => import('@/views/SummarizerView.vue'),
+        meta: { title: '文档摘要', icon: 'Document' },
+      },
+      {
         path: 'knowledge',
         name: 'knowledge',
         component: () => import('@/views/KnowledgeView.vue'),
