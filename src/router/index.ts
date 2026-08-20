@@ -46,6 +46,12 @@ const routes: RouteRecordRaw[] = [
         meta: { title: '智能翻译', icon: 'RefreshRight' },
       },
       {
+        path: 'apps/coder',
+        name: 'coder',
+        component: () => import('@/views/CoderView.vue'),
+        meta: { title: 'AI 代码助手', icon: 'Cpu' },
+      },
+      {
         path: 'knowledge',
         name: 'knowledge',
         component: () => import('@/views/KnowledgeView.vue'),

@@ -55,6 +55,17 @@ export const mockApps: AiApp[] = [
     status: 'online',
   },
   {
+    id: 'coder',
+    name: 'AI 代码助手',
+    description: '解释 / 重构 / 加注释 / 找 Bug / 翻译语言 — 17 种编程语言, 流式输出',
+    icon: 'Cpu',
+    bgGradient: 'linear-gradient(135deg, #6366f1, #8b5cf6)',
+    category: 'productivity',
+    tags: ['新上线'],
+    status: 'online',
+    route: '/apps/coder',
+  },
+  {
     id: 'meeting-assistant',
     name: '会议助手',
     description: '会议实时转写、自动生成会议纪要、待办事项一键同步到任务系统',
