@@ -28,6 +28,12 @@ const routes: RouteRecordRaw[] = [
         meta: { title: '智能问答', icon: 'ChatDotRound' },
       },
       {
+        path: 'apps/ai-writing',
+        name: 'ai-writing',
+        component: () => import('@/views/WriterView.vue'),
+        meta: { title: 'AI 写作助手', icon: 'EditPen' },
+      },
+      {
         path: 'knowledge',
         name: 'knowledge',
         component: () => import('@/views/KnowledgeView.vue'),

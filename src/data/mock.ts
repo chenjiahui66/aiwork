@@ -31,6 +31,7 @@ export const mockApps: AiApp[] = [
     category: 'communication',
     tags: ['热门'],
     status: 'online',
+    route: '/apps/ai-writing',
   },
   {
     id: 'data-insight',
