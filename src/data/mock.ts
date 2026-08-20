@@ -53,6 +53,7 @@ export const mockApps: AiApp[] = [
     category: 'data',
     tags: ['热门'],
     status: 'online',
+    route: '/apps/insight',
   },
   {
     id: 'coder',

@@ -52,6 +52,12 @@ const routes: RouteRecordRaw[] = [
         meta: { title: 'AI 代码助手', icon: 'Cpu' },
       },
       {
+        path: 'apps/insight',
+        name: 'insight',
+        component: () => import('@/views/InsightView.vue'),
+        meta: { title: '数据洞察', icon: 'DataLine' },
+      },
+      {
         path: 'knowledge',
         name: 'knowledge',
         component: () => import('@/views/KnowledgeView.vue'),
