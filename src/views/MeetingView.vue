@@ -157,6 +157,13 @@
                 <div class="result-actions">
                   <el-button type="primary" :icon="CopyDocument" @click="copyFullResult">复制全部</el-button>
                   <el-button :icon="Download" @click="downloadResult">下载 .md</el-button>
+                  <el-button
+                    :icon="Share"
+                    :disabled="!feishuConfigured || streaming || !result"
+                    @click="openFeishuDialog"
+                  >
+                    📊 导入飞书任务
+                  </el-button>
                 </div>
               </template>
             </div>
@@ -164,6 +171,90 @@
         </el-card>
       </el-col>
     </el-row>
+
+    <!-- 飞书导入对话框 -->
+    <el-dialog
+      v-model="feishuDialogVisible"
+      title="📊 导入会议任务到多维表格"
+      width="640px"
+      :close-on-click-modal="false"
+    >
+      <el-alert
+        v-if="!feishuConfigured"
+        type="warning"
+        :closable="false"
+        title="飞书未配置"
+        description="请在后端 .env 里填 FEISHU_APP_ID / FEISHU_APP_SECRET / FEISHU_BITABLE_APP_TOKEN / FEISHU_BITABLE_TABLE_ID"
+        style="margin-bottom: 12px;"
+      />
+      <el-alert
+        v-else-if="feishuTableUrl"
+        type="info"
+        :closable="false"
+        style="margin-bottom: 12px;"
+      >
+        <template #title>
+          目标表格:
+          <a :href="feishuTableUrl" target="_blank" style="margin-left: 4px;">
+            {{ feishuTableId }}
+          </a>
+          <span style="color:#909399; margin-left:8px;">(点击查看)</span>
+        </template>
+      </el-alert>
+
+      <div v-if="feishuParsing" class="parsing-tip">
+        <el-icon class="is-loading"><Loading /></el-icon>
+        <span> 正在解析会议内容为结构化待办…</span>
+      </div>
+
+      <div v-else-if="feishuTodos.length > 0">
+        <div style="margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center;">
+          <span style="font-size: 13px; color: #606266;">
+            共解析出 <b style="color:#8b5cf6;">{{ feishuTodos.length }}</b> 条待办,可手动编辑后再推送:
+          </span>
+          <el-button link size="small" @click="addFeishuTodo">+ 添加一行</el-button>
+        </div>
+        <div class="todos-table">
+          <div class="todos-header">
+            <span>标题</span>
+            <span>责任人</span>
+            <span>截止</span>
+            <span>优先级</span>
+            <span></span>
+          </div>
+          <div v-for="(todo, i) in feishuTodos" :key="i" class="todos-row">
+            <el-input v-model="todo.title" size="small" placeholder="任务标题" />
+            <el-input v-model="todo.owner" size="small" placeholder="责任人" />
+            <el-input v-model="todo.due_date" size="small" placeholder="YYYY-MM-DD" />
+            <el-select v-model="todo.priority" size="small" placeholder="优先级">
+              <el-option label="高" value="高" />
+              <el-option label="中" value="中" />
+              <el-option label="低" value="低" />
+            </el-select>
+            <el-button link size="small" type="danger" @click="feishuTodos.splice(i, 1)">
+              删除
+            </el-button>
+          </div>
+        </div>
+      </div>
+
+      <div v-else-if="feishuParseError" class="parse-error">
+        ❌ {{ feishuParseError }}
+      </div>
+
+      <template #footer>
+        <el-button @click="feishuDialogVisible = false" :disabled="feishuPushing">取消</el-button>
+        <el-button
+          type="primary"
+          :icon="Share"
+          :loading="feishuPushing"
+          :disabled="!feishuConfigured || feishuParsing || feishuTodos.length === 0"
+          @click="pushToFeishu"
+        >
+          {{ feishuPushing ? '推送中…' : `推送到飞书 (${feishuTodos.length})` }}
+        </el-button>
+      </template>
+    </el-dialog>
   </div>
 </template>
 
@@ -175,8 +266,10 @@ import {
   Delete,
   Document,
   Download,
+  Loading,
   MagicStick,
   Microphone,
+  Share,
   VideoPause,
 } from '@element-plus/icons-vue'
 
@@ -205,6 +298,22 @@ const result = ref('')
 const errorMsg = ref('')
 const lastMeta = ref<Meta | null>(null)
 const resultRef = ref<HTMLElement>()
+
+// ===== 飞书相关状态 =====
+const feishuConfigured = ref(false)
+const feishuTableUrl = ref('')
+const feishuTableId = ref('')
+const feishuDialogVisible = ref(false)
+const feishuParsing = ref(false)
+const feishuPushing = ref(false)
+const feishuParseError = ref('')
+interface FeishuTodo {
+  title: string
+  owner: string
+  due_date: string
+  priority: string
+}
+const feishuTodos = ref<FeishuTodo[]>([])
 
 // 录音状态
 const isRecording = ref(false)
@@ -466,8 +575,136 @@ function scrollToBottom() {
   })
 }
 
+// ===== 飞书集成 =====
+async function checkFeishuStatus() {
+  try {
+    const resp = await fetch(`${API_BASE}/api/feishu/status`)
+    if (resp.ok) {
+      const data = await resp.json()
+      feishuConfigured.value = data.configured
+      feishuTableUrl.value = data.table_url || ''
+      feishuTableId.value = data.table_id || ''
+    }
+  } catch {
+    feishuConfigured.value = false
+  }
+}
+
+async function openFeishuDialog() {
+  if (!result.value) {
+    ElMessage.warning('还没生成会议内容')
+    return
+  }
+  feishuDialogVisible.value = true
+  feishuTodos.value = []
+  feishuParseError.value = ''
+  feishuParsing.value = true
+  try {
+    // 用流式 parse-todos — 解析结果同时给前端展示
+    const resp = await fetch(`${API_BASE}/api/feishu/parse-todos`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        text: result.value,
+        meeting_title: lastMeta.value?.task_label,
+      }),
+    })
+    if (!resp.ok || !resp.body) {
+      throw new Error(`HTTP ${resp.status}`)
+    }
+    const reader = resp.body.getReader()
+    const decoder = new TextDecoder()
+    let buffer = ''
+    while (true) {
+      const { done, value } = await reader.read()
+      if (done) break
+      buffer += decoder.decode(value, { stream: true })
+      const lines = buffer.split('\n')
+      buffer = lines.pop() || ''
+      for (const line of lines) {
+        if (!line.startsWith('data: ')) continue
+        try {
+          const ev = JSON.parse(line.slice(6))
+          if (ev.type === 'done') {
+            feishuTodos.value = (ev.todos || []).map((t: any) => ({
+              title: t.title || '',
+              owner: t.owner || '',
+              due_date: t.due_date || '',
+              priority: t.priority || '中',
+            }))
+          } else if (ev.type === 'error') {
+            feishuParseError.value = ev.message
+          }
+        } catch { /* skip */ }
+      }
+    }
+    if (feishuTodos.value.length === 0 && !feishuParseError.value) {
+      feishuParseError.value = '未识别到明确待办事项 — 可点下方"+ 添加一行"手动添加'
+    }
+  } catch (e: any) {
+    feishuParseError.value = `解析失败: ${e.message}`
+  } finally {
+    feishuParsing.value = false
+  }
+}
+
+function addFeishuTodo() {
+  feishuTodos.value.push({ title: '', owner: '', due_date: '', priority: '中' })
+}
+
+async function pushToFeishu() {
+  if (feishuTodos.value.length === 0) {
+    ElMessage.warning('没有可推送的待办')
+    return
+  }
+  // 校验标题非空
+  const valid = feishuTodos.value.filter((t) => t.title.trim())
+  if (valid.length === 0) {
+    ElMessage.warning('所有待办标题都为空,请至少填一条')
+    return
+  }
+
+  feishuPushing.value = true
+  try {
+    // 包装成飞书期望格式 — 字段名固定为:标题/责任人/截止日期/优先级
+    const records = valid.map((t) => ({
+      标题: t.title.trim(),
+      责任人: t.owner.trim(),
+      截止日期: t.due_date.trim(),
+      优先级: t.priority,
+    }))
+    const resp = await fetch(`${API_BASE}/api/feishu/push-records`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ records }),
+    })
+    const data = await resp.json().catch(() => ({}))
+    if (!resp.ok) {
+      throw new Error(data.detail || `HTTP ${resp.status}`)
+    }
+    ElMessage.success(`✅ ${data.message}`)
+    feishuDialogVisible.value = false
+    if (feishuTableUrl.value) {
+      // 给个跳转提示
+      setTimeout(() => {
+        ElMessage.info({
+          message: '点击打开飞书多维表格查看',
+          duration: 0,
+          showClose: true,
+          onClick: () => window.open(feishuTableUrl.value, '_blank'),
+        } as any)
+      }, 500)
+    }
+  } catch (e: any) {
+    ElMessage.error(`推送失败: ${e.message}`)
+  } finally {
+    feishuPushing.value = false
+  }
+}
+
 onMounted(() => {
   loadOptions()
+  checkFeishuStatus()
   // 检测浏览器支持
   const SR = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition
   if (!SR) browserSupportsSpeech.value = false
@@ -672,6 +909,53 @@ onUnmounted(() => {
 }
 .markdown-text :deep(p) {
   margin: 6px 0;
+}
+
+/* 飞书待办编辑表格 */
+.parsing-tip {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 20px;
+  color: #8b5cf6;
+  font-size: 14px;
+  justify-content: center;
+}
+.parse-error {
+  padding: 16px;
+  background: #fef0f0;
+  border-radius: 4px;
+  color: #f56c6c;
+  font-size: 13px;
+}
+.todos-table {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  max-height: 360px;
+  overflow-y: auto;
+  padding: 4px;
+}
+.todos-header,
+.todos-row {
+  display: grid;
+  grid-template-columns: 2fr 1fr 1.2fr 0.8fr 60px;
+  gap: 6px;
+  align-items: center;
+}
+.todos-header {
+  font-size: 12px;
+  color: #909399;
+  padding: 0 4px;
+  font-weight: 500;
+}
+.todos-row {
+  padding: 4px;
+  background: #fafbfc;
+  border-radius: 4px;
+}
+.todos-row:hover {
+  background: #f0f0f5;
 }
 .markdown-text :deep(strong) {
   color: #8b5cf6;
