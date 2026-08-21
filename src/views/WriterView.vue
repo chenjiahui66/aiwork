@@ -155,6 +155,18 @@
                     >
                       重新生成
                     </el-button>
+                    <el-button
+                      v-if="!msg.streaming && msg.content"
+                      link
+                      type="primary"
+                      size="small"
+                      :icon="Promotion"
+                      style="margin-left: 4px;"
+                      :disabled="!emailConfigured"
+                      @click="openEmailDialog(msg)"
+                    >
+                      📧 发邮件
+                    </el-button>
                   </div>
                   <div class="ai-text">{{ msg.content }}<span v-if="msg.streaming" class="cursor-blink">▍</span></div>
                 </div>
@@ -164,6 +176,52 @@
         </el-card>
       </el-col>
     </el-row>
+
+    <!-- 发邮件弹窗 -->
+    <el-dialog
+      v-model="emailDialogVisible"
+      title="📧 发送邮件"
+      width="560px"
+      :close-on-click-modal="false"
+    >
+      <el-alert
+        v-if="!emailConfigured"
+        type="warning"
+        :closable="false"
+        title="SMTP 未配置"
+        description="请在后端 .env 里填 SMTP_HOST / SMTP_USER / SMTP_PASSWORD(授权码),然后重启后端服务"
+        style="margin-bottom: 12px;"
+      />
+      <el-form :model="emailForm" label-width="80px" :disabled="!emailConfigured || emailSending">
+        <el-form-item label="收件人" required>
+          <el-input
+            v-model="emailForm.to"
+            placeholder="多个邮箱用逗号分隔,例如: boss@company.com, hr@company.com"
+          />
+        </el-form-item>
+        <el-form-item label="抄送(选填)">
+          <el-input v-model="emailForm.cc" placeholder="可选,多个邮箱用逗号分隔" />
+        </el-form-item>
+        <el-form-item label="主题" required>
+          <el-input v-model="emailForm.subject" placeholder="邮件主题" />
+        </el-form-item>
+        <el-form-item label="格式">
+          <el-radio-group v-model="emailForm.isHtml">
+            <el-radio :value="false">纯文本</el-radio>
+            <el-radio :value="true">HTML</el-radio>
+          </el-radio-group>
+        </el-form-item>
+        <el-form-item label="正文预览">
+          <div class="email-preview">{{ emailForm.content.slice(0, 200) }}{{ emailForm.content.length > 200 ? '...' : '' }}</div>
+        </el-form-item>
+      </el-form>
+      <template #footer>
+        <el-button @click="emailDialogVisible = false" :disabled="emailSending">取消</el-button>
+        <el-button type="primary" :icon="Promotion" :loading="emailSending" :disabled="!emailConfigured || !canSendEmail" @click="sendEmail">
+          {{ emailSending ? '发送中…' : '发送' }}
+        </el-button>
+      </template>
+    </el-dialog>
   </div>
 </template>
 
@@ -251,6 +309,80 @@ const inputs = reactive<Record<string, string>>({})
 const streaming = ref(false)
 const messages = ref<Message[]>([])
 const messageListRef = ref<HTMLElement>()
+
+// ===== 发邮件相关状态 =====
+const emailConfigured = ref(false)  // 后端 SMTP 是否配好
+const emailDialogVisible = ref(false)
+const emailSending = ref(false)
+const emailForm = reactive({
+  to: '',
+  cc: '',
+  subject: '',
+  content: '',
+  isHtml: false,
+})
+
+// 检查 SMTP 是否配好
+async function checkEmailStatus() {
+  try {
+    const resp = await fetch(`${API_BASE}/api/email/status`)
+    if (resp.ok) {
+      const data = await resp.json()
+      emailConfigured.value = data.configured
+    }
+  } catch {
+    emailConfigured.value = false
+  }
+}
+
+function openEmailDialog(msg: Message) {
+  // 默认主题:用类型标签 + 标题占位
+  const subject = `${msg.typeLabel} - ${new Date().toLocaleDateString('zh-CN')}`
+  emailForm.to = ''
+  emailForm.cc = ''
+  emailForm.subject = subject
+  emailForm.content = msg.content
+  emailForm.isHtml = false
+  emailDialogVisible.value = true
+}
+
+// 校验收件人格式(简单:必须含 @)
+const canSendEmail = computed<boolean>(() => {
+  const toList = emailForm.to.split(',').map((s) => s.trim()).filter(Boolean)
+  return toList.length > 0 && emailForm.subject.trim().length > 0
+})
+
+async function sendEmail() {
+  if (!canSendEmail.value) return
+  emailSending.value = true
+  try {
+    const toList = emailForm.to.split(',').map((s) => s.trim()).filter(Boolean)
+    const ccList = emailForm.cc
+      ? emailForm.cc.split(',').map((s) => s.trim()).filter(Boolean)
+      : []
+    const resp = await fetch(`${API_BASE}/api/email/send`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        to: toList,
+        cc: ccList,
+        subject: emailForm.subject,
+        content: emailForm.content,
+        is_html: emailForm.isHtml,
+      }),
+    })
+    const data = await resp.json().catch(() => ({}))
+    if (!resp.ok) {
+      throw new Error(data.detail || `HTTP ${resp.status}`)
+    }
+    ElMessage.success(`✅ 邮件已发送给 ${toList.join(', ')}`)
+    emailDialogVisible.value = false
+  } catch (e: any) {
+    ElMessage.error(`发送失败: ${e.message}`)
+  } finally {
+    emailSending.value = false
+  }
+}
 
 // 当前类型的字段定义(动态切换)
 const currentFields = computed<FieldDef[]>(
@@ -443,6 +575,7 @@ function formatTime(ts: number): string {
 
 onMounted(() => {
   loadTypes()
+  checkEmailStatus()
 })
 </script>
 
@@ -571,6 +704,19 @@ onMounted(() => {
 .ai-text {
   white-space: pre-wrap;
   word-break: break-word;
+}
+.email-preview {
+  background: #fafbfc;
+  border: 1px solid #e4e7ed;
+  border-radius: 4px;
+  padding: 8px 12px;
+  font-size: 12px;
+  color: #606266;
+  max-height: 120px;
+  overflow-y: auto;
+  white-space: pre-wrap;
+  word-break: break-word;
+  line-height: 1.5;
 }
 .cursor-blink {
   display: inline-block;
