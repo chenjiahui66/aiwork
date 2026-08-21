@@ -106,8 +106,9 @@ export const mockApps: AiApp[] = [
     icon: 'Connection',
     bgGradient: 'linear-gradient(135deg, #6366f1, #a855f7)',
     category: 'data',
-    tags: ['即将推出'],
-    status: 'coming',
+    tags: ['新上线'],
+    status: 'online',
+    route: '/apps/workflow',
   },
   {
     id: 'translation',

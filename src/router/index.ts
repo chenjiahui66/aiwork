@@ -76,6 +76,12 @@ const routes: RouteRecordRaw[] = [
         meta: { title: '会议助手', icon: 'Microphone' },
       },
       {
+        path: 'apps/workflow',
+        name: 'workflow',
+        component: () => import('@/views/WorkflowView.vue'),
+        meta: { title: '可视化工作流', icon: 'Connection' },
+      },
+      {
         path: 'knowledge',
         name: 'knowledge',
         component: () => import('@/views/KnowledgeView.vue'),
