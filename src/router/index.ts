@@ -58,6 +58,12 @@ const routes: RouteRecordRaw[] = [
         meta: { title: '数据洞察', icon: 'DataLine' },
       },
       {
+        path: 'apps/hr',
+        name: 'hr',
+        component: () => import('@/views/HrView.vue'),
+        meta: { title: 'HR 助手', icon: 'UserFilled' },
+      },
+      {
         path: 'knowledge',
         name: 'knowledge',
         component: () => import('@/views/KnowledgeView.vue'),

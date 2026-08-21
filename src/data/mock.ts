@@ -95,6 +95,7 @@ export const mockApps: AiApp[] = [
     category: 'productivity',
     tags: ['热门'],
     status: 'online',
+    route: '/apps/hr',
   },
   {
     id: 'workflow',
@@ -110,11 +111,11 @@ export const mockApps: AiApp[] = [
     id: 'translation',
     name: '翻译助手',
     description: '支持 50+ 语种互译,合同 / 技术文档 / 邮件一键精准翻译',
-    icon: 'Promotion',
+    icon: 'RefreshRight',
     bgGradient: 'linear-gradient(135deg, #06b6d4, #3b82f6)',
     category: 'communication',
-    tags: [],
-    status: 'beta',
+    tags: ['新上线'],
+    status: 'online',
     route: '/apps/translator',
   },
 ]
