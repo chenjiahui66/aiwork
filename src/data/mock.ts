@@ -75,6 +75,7 @@ export const mockApps: AiApp[] = [
     category: 'productivity',
     tags: ['新上线'],
     status: 'online',
+    route: '/apps/meeting',
   },
   {
     id: 'ai-design',
@@ -85,6 +86,7 @@ export const mockApps: AiApp[] = [
     category: 'creative',
     tags: ['新上线'],
     status: 'beta',
+    route: '/apps/designer',
   },
   {
     id: 'hr-assistant',

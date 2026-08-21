@@ -64,6 +64,18 @@ const routes: RouteRecordRaw[] = [
         meta: { title: 'HR 助手', icon: 'UserFilled' },
       },
       {
+        path: 'apps/designer',
+        name: 'designer',
+        component: () => import('@/views/DesignerView.vue'),
+        meta: { title: 'AI 设计助手', icon: 'PictureFilled' },
+      },
+      {
+        path: 'apps/meeting',
+        name: 'meeting',
+        component: () => import('@/views/MeetingView.vue'),
+        meta: { title: '会议助手', icon: 'Microphone' },
+      },
+      {
         path: 'knowledge',
         name: 'knowledge',
         component: () => import('@/views/KnowledgeView.vue'),
