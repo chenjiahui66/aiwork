@@ -80,12 +80,12 @@ export const mockApps: AiApp[] = [
   {
     id: 'ai-design',
     name: 'AI 设计助手',
-    description: '海报 / Banner / Logo / PPT 封面,文字描述秒出专业设计图',
+    description: '海报 / Banner / Logo / PPT 封面 — 生成专业英文 Prompt,可粘到 Midjourney/即梦/文心一格等工具',
     icon: 'PictureFilled',
     bgGradient: 'linear-gradient(135deg, #f43f5e, #f59e0b)',
     category: 'creative',
     tags: ['新上线'],
-    status: 'beta',
+    status: 'online',
     route: '/apps/designer',
   },
   {
