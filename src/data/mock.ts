@@ -4,7 +4,7 @@ import type { AiApp, UserInfo } from '@/types'
 export const mockUser: UserInfo = {
   id: 10086,
   username: 'zhangsan',
-  nickname: '张三',
+  nickname: 'admin',
   department: '产品研发中心',
   role: 'admin',
 }
