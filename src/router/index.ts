@@ -82,6 +82,12 @@ const routes: RouteRecordRaw[] = [
         meta: { title: '可视化工作流', icon: 'Connection' },
       },
       {
+        path: 'apps/geo',
+        name: 'geo',
+        component: () => import('@/views/GEOView.vue'),
+        meta: { title: 'GEO 内容智能体', icon: 'MagicStick' },
+      },
+      {
         path: 'knowledge',
         name: 'knowledge',
         component: () => import('@/views/KnowledgeView.vue'),

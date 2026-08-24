@@ -121,6 +121,17 @@ export const mockApps: AiApp[] = [
     status: 'online',
     route: '/apps/translator',
   },
+  {
+    id: 'geo-writer',
+    name: 'GEO 内容智能体',
+    description: '输入标题 → AI 自动完成选题研究 / 文章 / 配图 / 多平台发布包 — 专为自媒体博主打造的 GEO 优化 Agent',
+    icon: 'MagicStick',
+    bgGradient: 'linear-gradient(135deg, #ec4899, #f59e0b)',
+    category: 'creative',
+    tags: ['新上线', '热门'],
+    status: 'online',
+    route: '/apps/geo',
+  },
 ]
 
 export const mockStats = [
