@@ -64,6 +64,12 @@ const routes: RouteRecordRaw[] = [
         meta: { title: 'HR 助手', icon: 'UserFilled' },
       },
       {
+        path: 'apps/card-recognizer',
+        name: 'card-recognizer',
+        component: () => import('@/views/CardRecognizerView.vue'),
+        meta: { title: '名片识别器', icon: 'Postcard' },
+      },
+      {
         path: 'apps/designer',
         name: 'designer',
         component: () => import('@/views/DesignerView.vue'),

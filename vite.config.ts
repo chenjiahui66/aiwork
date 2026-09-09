@@ -24,6 +24,13 @@ export default defineConfig({
         target: 'http://127.0.0.1:8001',
         changeOrigin: true,
       },
+      // 代理 Dify 工作流 API,避免浏览器 CORS
+      // 前端调 /dify-api/v1/workflows/run → 实际打到 http://localhost/v1/workflows/run
+      '/dify-api': {
+        target: 'http://127.0.0.1',
+        changeOrigin: true,
+        rewrite: (p) => p.replace(/^\/dify-api/, ''),
+      },
     },
   },
   build: {
