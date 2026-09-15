@@ -94,6 +94,12 @@ const routes: RouteRecordRaw[] = [
         meta: { title: 'GEO 内容智能体', icon: 'MagicStick' },
       },
       {
+        path: 'apps/testcase-generator',
+        name: 'testcase-generator',
+        component: () => import('@/views/TestCaseGeneratorView.vue'),
+        meta: { title: '测试用例生成器', icon: 'EditPen' },
+      },
+      {
         path: 'knowledge',
         name: 'knowledge',
         component: () => import('@/views/KnowledgeView.vue'),
