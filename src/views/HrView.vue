@@ -133,7 +133,7 @@
                   <div class="params-summary">
                     <div v-for="field in currentFields" :key="field.key">
                       <span class="param-key">{{ field.label }}:</span>
-                      <span class="param-val">{{ msg.inputs[field.key] || '(空)' }}</span>
+                      <span class="param-val">{{ msg.inputs?.[field.key] || '(空)' }}</span>
                     </div>
                   </div>
                 </div>
